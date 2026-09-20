@@ -11,7 +11,10 @@ import type {
   Visit,
 } from '@pandago/shared';
 
-export const API_BASE = 'http://localhost:3001';
+// VITE_API_BASE_URL is baked in at build time (see apps/admin/Dockerfile);
+// defaults to the local dev API.
+export const API_BASE: string =
+  import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3001';
 
 const TOKEN_KEY = 'pandago.token';
 const SESSION_KEY = 'pandago.session';

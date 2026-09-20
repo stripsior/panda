@@ -1,14 +1,6 @@
 name: Android build
 
 on:
-  push:
-    branches: [main, master]
-    paths:
-      - 'apps/mobile/**'
-      - 'packages/shared/**'
-      - 'package.json'
-      - 'package-lock.json'
-      - '.github/workflows/android-build.yml'
   workflow_dispatch:
 
 jobs:
