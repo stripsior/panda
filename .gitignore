@@ -1,0 +1,25 @@
+# dependencies
+node_modules/
+
+# expo
+apps/mobile/.expo/
+apps/mobile/expo-env.d.ts
+apps/mobile/web-build/
+apps/mobile/dist/
+
+# android build artifacts
+apps/mobile/android/app/build/
+apps/mobile/android/.gradle/
+apps/mobile/android/app/.cxx/
+apps/mobile/android/build/
+apps/mobile/android/local.properties
+*.keystore
+!apps/mobile/android/app/debug.keystore
+
+# gradle export cache used for local builds
+.gradle-export/
+
+# misc
+*.log
+.idea/
+.DS_Store

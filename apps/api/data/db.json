@@ -1,0 +1,164 @@
+{
+  "adminCode": "ADMIN-001",
+  "organizers": [
+    {
+      "id": "org-1",
+      "name": "Main Organizer",
+      "code": "ORG-001"
+    },
+    {
+      "id": "org-2",
+      "name": "Field Organizer",
+      "code": "ORG-002"
+    }
+  ],
+  "teams": [
+    {
+      "id": "team-alpha",
+      "name": "Alpha Squad",
+      "joinCode": "TEAM-ALPHA",
+      "score": 100
+    },
+    {
+      "id": "team-bravo",
+      "name": "Bravo Squad",
+      "joinCode": "TEAM-BRAVO",
+      "score": 0
+    },
+    {
+      "id": "team-charlie",
+      "name": "Charlie Squad",
+      "joinCode": "TEAM-CHARLIE",
+      "score": 0
+    },
+    {
+      "id": "team-delta",
+      "name": "Delta Squad",
+      "joinCode": "TEAM-DELTA",
+      "score": 0
+    }
+  ],
+  "checkpoints": [
+    {
+      "id": "cp-1",
+      "name": "Main Square Fountain",
+      "code": "CP-A1",
+      "lat": 50.0616,
+      "lng": 19.9373,
+      "points": 100,
+      "orderIndex": 1
+    },
+    {
+      "id": "cp-2",
+      "name": "Wawel Castle Gate",
+      "code": "CP-B2",
+      "lat": 50.054,
+      "lng": 19.9354,
+      "points": 150,
+      "orderIndex": 2
+    },
+    {
+      "id": "cp-3",
+      "name": "Kazimierz Bench",
+      "code": "CP-C3",
+      "lat": 50.0577,
+      "lng": 19.9432,
+      "points": 120,
+      "orderIndex": 3
+    },
+    {
+      "id": "cp-4",
+      "name": "Planty North Exit",
+      "code": "CP-D4",
+      "lat": 50.0667,
+      "lng": 19.938,
+      "points": 80,
+      "orderIndex": 4
+    }
+  ],
+  "visits": [
+    {
+      "id": "6174cae2-f040-402f-967a-1492d05cd483",
+      "teamId": "team-alpha",
+      "checkpointId": "cp-1",
+      "status": "confirmed",
+      "points": 100,
+      "createdAt": "2026-09-16T15:03:25.336Z"
+    }
+  ],
+  "scoreEntries": [],
+  "positions": [
+    {
+      "teamId": "team-alpha",
+      "teamName": "Alpha Squad",
+      "lat": 50.06,
+      "lng": 19.94,
+      "updatedAt": "2026-09-16T17:34:56.657Z"
+    }
+  ],
+  "sessions": [
+    {
+      "role": "admin",
+      "teamId": null,
+      "name": "Admin",
+      "token": "134082cd220ab6e2ca59a013f9dc65614b7af6c706f45547",
+      "createdAt": "2026-09-16T15:03:10.605Z"
+    },
+    {
+      "role": "player",
+      "teamId": "team-alpha",
+      "name": "Alpha Squad",
+      "token": "f78a85ec152e41b62b8367b31c35ef3155ff76c36e0c60ae",
+      "createdAt": "2026-09-16T15:03:25.089Z"
+    },
+    {
+      "role": "admin",
+      "teamId": null,
+      "name": "Admin",
+      "token": "5a626c866c3abe9e96069e14a33b8f2b51223063481bd6e9",
+      "createdAt": "2026-09-16T15:06:53.540Z"
+    },
+    {
+      "role": "player",
+      "teamId": "team-alpha",
+      "name": "Alpha Squad",
+      "token": "55bc51381a376736b641e1fda54b8cbf5105221ad8ff10de",
+      "createdAt": "2026-09-16T15:58:12.162Z"
+    },
+    {
+      "role": "admin",
+      "teamId": null,
+      "name": "Admin",
+      "token": "42c7f14a75c49ed207e35602ad4f3b90e6fc9bb0a199ed11",
+      "createdAt": "2026-09-16T17:09:32.036Z"
+    },
+    {
+      "role": "admin",
+      "teamId": null,
+      "name": "Admin",
+      "token": "09270fc97a0a2564981151f41615b92b8abe56b65d895386",
+      "createdAt": "2026-09-16T17:10:17.046Z"
+    },
+    {
+      "role": "player",
+      "teamId": "team-alpha",
+      "name": "Alpha Squad",
+      "token": "672192af3088f42a8af0de2c61d29b1f75ec053fd50cce54",
+      "createdAt": "2026-09-16T17:12:17.712Z"
+    },
+    {
+      "role": "admin",
+      "teamId": null,
+      "name": "Admin",
+      "token": "7da34189a86d43c0baa329a9322ea3f145147368d9b6bc4a",
+      "createdAt": "2026-09-16T17:12:47.932Z"
+    },
+    {
+      "role": "admin",
+      "teamId": null,
+      "name": "Admin",
+      "token": "961864bbb3651e946bcd779b926ce6a0972cc005dc82be79",
+      "createdAt": "2026-09-16T17:31:20.821Z"
+    }
+  ]
+}

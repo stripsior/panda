@@ -1,0 +1,43 @@
+{
+  "expo": {
+    "name": "PandaGo",
+    "slug": "pandago",
+    "version": "0.1.0",
+    "scheme": "pandago",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "icon": "./assets/icon.png",
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "CAMERA"
+      ],
+      "package": "com.anonymous.pandago"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "PandaGo używa Twojej lokalizacji, aby weryfikować meldunki w punktach kontrolnych i udostępniać pozycję Twojej drużyny.",
+        "NSCameraUsageDescription": "Organizatorzy PandaGo używają aparatu do skanowania kodów QR drużyn."
+      }
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Zezwól PandaGo na używanie Twojej lokalizacji."
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

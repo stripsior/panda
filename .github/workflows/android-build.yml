@@ -1,0 +1,55 @@
+name: Android build
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - 'apps/mobile/**'
+      - 'packages/shared/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/android-build.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build release APK
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/mobile/android
+    env:
+      # Production API — baked into the JS bundle at build time.
+      EXPO_PUBLIC_API_URL: https://panda.strikx.dev
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: .
+
+      - name: Build release APK
+        run: ./gradlew assembleRelease --no-daemon
+
+      - name: Rename APK
+        run: |
+          mv app/build/outputs/apk/release/app-release.apk \
+             app/build/outputs/apk/release/PandaGo-${{ github.sha }}.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PandaGo-APK
+          path: apps/mobile/android/app/build/outputs/apk/release/PandaGo-*.apk
+          retention-days: 30
