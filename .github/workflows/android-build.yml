@@ -2,11 +2,18 @@ name: Android build
 
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release tag (e.g. v0.1.1)'
+        required: true
+        default: 'v0.1.1'
 
 jobs:
   build:
     name: Build release APK
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     defaults:
       run:
         working-directory: apps/mobile/android
@@ -38,10 +45,18 @@ jobs:
       - name: Rename APK
         run: |
           mv app/build/outputs/apk/release/app-release.apk \
-             app/build/outputs/apk/release/PandaGo-${{ github.sha }}.apk
+             app/build/outputs/apk/release/PandaGo-${{ github.event.inputs.version }}.apk
 
       - uses: actions/upload-artifact@v4
         with:
           name: PandaGo-APK
           path: apps/mobile/android/app/build/outputs/apk/release/PandaGo-*.apk
           retention-days: 30
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.version }}
+          name: PandaGo ${{ github.event.inputs.version }}
+          generate_release_notes: true
+          files: apps/mobile/android/app/build/outputs/apk/release/PandaGo-*.apk
