@@ -81,6 +81,17 @@ export function TeamsPage() {
     }
   }
 
+  async function reset(team: Team) {
+    if (!window.confirm(`Zresetować postęp drużyny „${team.name}"? Wynik wróci do 0, a historia punktów i pozycje zostaną wyczyszczone.`)) return;
+    try {
+      await api.resetTeam(team.id);
+      setEntries((prev) => ({ ...prev, [team.id]: [] }));
+      refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Nie udało się zresetować');
+    }
+  }
+
   // ---- add team dialog ----
   const [addOpen, setAddOpen] = useState(false);
   const [newName, setNewName] = useState('');
@@ -118,7 +129,7 @@ export function TeamsPage() {
                 <TableHead>Drużyna</TableHead>
                 <TableHead>Kod dołączenia</TableHead>
                 <TableHead className="text-right">Wynik</TableHead>
-                <TableHead className="w-64 text-right">Akcje</TableHead>
+                <TableHead className="w-80 text-right">Akcje</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -145,6 +156,9 @@ export function TeamsPage() {
                         }}
                       >
                         Punkty
+                      </Button>
+                      <Button variant="outline" onClick={() => reset(team)}>
+                        Reset
                       </Button>
                       <Button
                         variant="ghost"
