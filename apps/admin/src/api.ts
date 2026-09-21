@@ -104,6 +104,8 @@ export const api = {
     request<Team>('/teams', { method: 'POST', body: JSON.stringify({ name }) }),
   deleteTeam: (id: string) =>
     request<void>(`/teams/${id}`, { method: 'DELETE' }),
+  resetTeam: (id: string) =>
+    request<Team>(`/teams/${id}/reset`, { method: 'POST' }),
   awardPoints: (teamId: string, delta: number, reason: string) =>
     request<Team>(`/teams/${teamId}/score`, {
       method: 'POST',

@@ -291,6 +291,22 @@ app.post<{ Body: { name: string } }>(
   },
 );
 
+app.post<{ Params: { id: string } }>(
+  '/teams/:id/reset',
+  { preHandler: requireRole('admin') },
+  async (req, reply) => {
+    const db = getDb();
+    const team = db.teams.find((t) => t.id === req.params.id);
+    if (!team) return reply.code(404).send({ error: 'Nie znaleziono drużyny' });
+    team.score = 0;
+    db.visits = db.visits.filter((v) => v.teamId !== team.id);
+    db.scoreEntries = db.scoreEntries.filter((e) => e.teamId !== team.id);
+    db.positions = db.positions.filter((p) => p.teamId !== team.id);
+    await saveDb();
+    return reply.send(publicTeam(team));
+  },
+);
+
 app.delete<{ Params: { id: string } }>(
   '/teams/:id',
   { preHandler: requireRole('admin') },
