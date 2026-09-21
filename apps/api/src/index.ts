@@ -320,7 +320,7 @@ app.post<{ Body: { name: string } }>(
     const team: Team = {
       id: `team-${slug}-${randomUUID().slice(0, 4)}`,
       name: req.body.name.trim(),
-      joinCode: `TEAM-${slug.replace(/-/g, '').slice(0, 8).toUpperCase()}-${randomUUID().slice(0, 4)}`,
+      joinCode: `TEAM-${slug.replace(/-/g, '').slice(0, 8).toUpperCase()}-${randomUUID().slice(0, 4)}`.toUpperCase(),
       score: 0,
     };
     db.teams.push(team);
