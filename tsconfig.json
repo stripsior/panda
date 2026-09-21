@@ -1,0 +1,8 @@
+{
+  "compilerOptions": {
+    "baseUrl": "./apps/mobile",
+    "paths": {
+      "@/*": ["src/*"]
+    }
+  }
+}

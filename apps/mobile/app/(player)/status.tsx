@@ -4,14 +4,14 @@ import { RefreshControl, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import QRCode from 'react-native-qrcode-svg';
-import { api } from '@/src/api';
-import { useAuth } from '@/src/auth';
-import { teamQrPayload } from '@/src/qr';
-import { Badge } from '@/src/components/ui/Badge';
-import { Button } from '@/src/components/ui/Button';
-import { Card } from '@/src/components/ui/Card';
-import { ThemedText } from '@/src/components/ui/ThemedText';
-import { usePalette } from '@/src/components/ui/colors';
+import { api } from '../../src/api';
+import { useAuth } from '../../src/auth';
+import { teamQrPayload } from '../../src/qr';
+import { Badge } from '../../src/components/ui/Badge';
+import { Button } from '../../src/components/ui/Button';
+import { Card } from '../../src/components/ui/Card';
+import { ThemedText } from '../../src/components/ui/ThemedText';
+import { usePalette } from '../../src/components/ui/colors';
 
 export default function StatusScreen() {
   const { auth, logout } = useAuth();

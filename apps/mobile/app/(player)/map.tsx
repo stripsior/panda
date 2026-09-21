@@ -2,13 +2,13 @@ import * as Location from 'expo-location';
 import type { CheckInRequest, PlayerGameState, Visit } from '@pandago/shared';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, Modal, View } from 'react-native';
-import { api } from '@/src/api';
-import { useAuth } from '@/src/auth';
-import LeafletMap, { type MapCheckpoint, type MapUserLocation } from '@/src/components/LeafletMap';
-import { Button } from '@/src/components/ui/Button';
-import { ThemedText } from '@/src/components/ui/ThemedText';
-import { usePalette } from '@/src/components/ui/colors';
-import { POSITION_INTERVAL_MS } from '@/src/config';
+import { api } from '../../src/api';
+import { useAuth } from '../../src/auth';
+import LeafletMap, { type MapCheckpoint, type MapUserLocation } from '../../src/components/LeafletMap';
+import { Button } from '../../src/components/ui/Button';
+import { ThemedText } from '../../src/components/ui/ThemedText';
+import { usePalette } from '../../src/components/ui/colors';
+import { POSITION_INTERVAL_MS } from '../../src/config';
 
 export default function MapScreen() {
   const { auth } = useAuth();

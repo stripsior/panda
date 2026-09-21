@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { WebView } from 'react-native-webview';
-import leafletScript from '@/src/components/leaflet/leafletScript';
-import leafletStyle from '@/src/components/leaflet/leafletStyle';
+import leafletScript from './leaflet/leafletScript';
+import leafletStyle from './leaflet/leafletStyle';
 
 export interface MapCheckpoint {
   id: string;

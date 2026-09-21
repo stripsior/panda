@@ -1,7 +1,7 @@
 import { Stack, useRouter } from 'expo-router';
-import { Button } from '@/src/components/ui/Button';
-import { usePalette } from '@/src/components/ui/colors';
-import { useAuth } from '@/src/auth';
+import { Button } from '../../src/components/ui/Button';
+import { usePalette } from '../../src/components/ui/colors';
+import { useAuth } from '../../src/auth';
 
 export default function OrganizerLayout() {
   const c = usePalette();

@@ -3,12 +3,12 @@ import { useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { api } from '@/src/api';
-import { Button } from '@/src/components/ui/Button';
-import { Card } from '@/src/components/ui/Card';
-import { Input } from '@/src/components/ui/Input';
-import { ThemedText } from '@/src/components/ui/ThemedText';
-import { usePalette } from '@/src/components/ui/colors';
+import { api } from '../../../src/api';
+import { Button } from '../../../src/components/ui/Button';
+import { Card } from '../../../src/components/ui/Card';
+import { Input } from '../../../src/components/ui/Input';
+import { ThemedText } from '../../../src/components/ui/ThemedText';
+import { usePalette } from '../../../src/components/ui/colors';
 
 export default function TeamDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();

@@ -3,11 +3,11 @@ import { useCallback, useEffect, useState } from 'react';
 import { Pressable, RefreshControl, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { api } from '@/src/api';
-import { Button } from '@/src/components/ui/Button';
-import { Card } from '@/src/components/ui/Card';
-import { ThemedText } from '@/src/components/ui/ThemedText';
-import { usePalette } from '@/src/components/ui/colors';
+import { api } from '../../../src/api';
+import { Button } from '../../../src/components/ui/Button';
+import { Card } from '../../../src/components/ui/Card';
+import { ThemedText } from '../../../src/components/ui/ThemedText';
+import { usePalette } from '../../../src/components/ui/colors';
 
 export default function TeamsScreen() {
   const c = usePalette();

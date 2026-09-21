@@ -3,10 +3,10 @@ import { ActivityIndicator, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { router } from 'expo-router';
-import { Button } from '@/src/components/ui/Button';
-import { ThemedText } from '@/src/components/ui/ThemedText';
-import { usePalette } from '@/src/components/ui/colors';
-import { parseTeamQr } from '@/src/qr';
+import { Button } from '../../src/components/ui/Button';
+import { ThemedText } from '../../src/components/ui/ThemedText';
+import { usePalette } from '../../src/components/ui/colors';
+import { parseTeamQr } from '../../src/qr';
 
 export default function ScanScreen() {
   const c = usePalette();

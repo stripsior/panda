@@ -1,6 +1,6 @@
 import { Tabs } from 'expo-router';
 import { Text } from 'react-native';
-import { usePalette } from '@/src/components/ui/colors';
+import { usePalette } from '../../src/components/ui/colors';
 
 export default function PlayerTabsLayout() {
   const c = usePalette();

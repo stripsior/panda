@@ -1,8 +1,8 @@
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { View } from 'react-native';
-import { AuthProvider } from '@/src/auth';
-import { usePalette } from '@/src/components/ui/colors';
+import { AuthProvider } from '../src/auth';
+import { usePalette } from '../src/components/ui/colors';
 
 function RootStack() {
   const c = usePalette();

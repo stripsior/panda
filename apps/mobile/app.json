@@ -37,7 +37,13 @@
       ]
     ],
     "experiments": {
-      "typedRoutes": true
+      "typedRoutes": true,
+      "tsconfigPaths": true
+    },
+    "extra": {
+      "router": {
+        "root": "apps/mobile/app"
+      }
     }
   }
 }

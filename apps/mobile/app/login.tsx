@@ -7,11 +7,11 @@ import {
   ScrollView,
   View,
 } from 'react-native';
-import { ThemedText } from '@/src/components/ui/ThemedText';
-import { Button } from '@/src/components/ui/Button';
-import { Input } from '@/src/components/ui/Input';
-import { usePalette } from '@/src/components/ui/colors';
-import { useAuth } from '@/src/auth';
+import { ThemedText } from '../src/components/ui/ThemedText';
+import { Button } from '../src/components/ui/Button';
+import { Input } from '../src/components/ui/Input';
+import { usePalette } from '../src/components/ui/colors';
+import { useAuth } from '../src/auth';
 
 export default function LoginScreen() {
   const { login } = useAuth();

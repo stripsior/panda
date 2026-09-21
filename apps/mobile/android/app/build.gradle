@@ -51,9 +51,11 @@ react {
     //   See https://github.com/react-native-community/cli/blob/main/docs/commands.md#bundle
     // extraPackagerArgs = []
 
-    // In this monorepo Expo/Metro treat the workspace root as the project
-    // root, so relativize the entry file from there — otherwise the relative
-    // path escapes the repo and module resolution fails in release bundles.
+    // Monorepo workaround: the plugin relativizes the entry file against
+    // `root` (also used as bundler cwd), while Expo resolves it from its own
+    // detected project root. A shim entry inside apps/mobile + root pointing
+    // there keeps every side consistent and lets expo-router find ./app.
+    entryFile = file(new File(projectRoot, "index.js"))
     root = new File(projectRoot).getParentFile().getParentFile()
 
     /* Hermes Commands */
