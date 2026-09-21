@@ -102,31 +102,21 @@ CREATE TABLE IF NOT EXISTS sessions (
 );
 `;
 
-function seed(): Db {
-  return {
-    adminCode: 'ADMIN-001',
-    organizers: [
-      { id: 'org-1', name: 'Główny organizator', code: 'ORG-001' },
-      { id: 'org-2', name: 'Organizator w terenie', code: 'ORG-002' },
-    ],
-    teams: [
-      { id: 'team-alpha', name: 'Drużyna Alpha', joinCode: 'TEAM-ALPHA', score: 0 },
-      { id: 'team-bravo', name: 'Drużyna Bravo', joinCode: 'TEAM-BRAVO', score: 0 },
-      { id: 'team-charlie', name: 'Drużyna Charlie', joinCode: 'TEAM-CHARLIE', score: 0 },
-      { id: 'team-delta', name: 'Drużyna Delta', joinCode: 'TEAM-DELTA', score: 0 },
-    ],
-    // Punkty kontrolne w okolicy centrum Krakowa — dostosuj do terenu gry.
-    checkpoints: [
-      { id: 'cp-1', name: 'Fontanna na Rynku', code: 'CP-A1', lat: 50.0616, lng: 19.9373, points: 100, orderIndex: 1 },
-      { id: 'cp-2', name: 'Brama Wawelu', code: 'CP-B2', lat: 50.0540, lng: 19.9354, points: 150, orderIndex: 2 },
-      { id: 'cp-3', name: 'Ławka w Kazimierzu', code: 'CP-C3', lat: 50.0577, lng: 19.9432, points: 120, orderIndex: 3 },
-      { id: 'cp-4', name: 'Północne wyjście z Plant', code: 'CP-D4', lat: 50.0667, lng: 19.9380, points: 80, orderIndex: 4 },
-    ],
-    visits: [],
-    scoreEntries: [],
-    positions: [],
-    sessions: [],
-  };
+// Rows created by the old demo seed (Kraków checkpoints, demo teams/organizers).
+// Removed once at boot so existing deployments start clean; user-created rows
+// are never touched.
+const LEGACY_SEED_TEAM_IDS = ['team-alpha', 'team-bravo', 'team-charlie', 'team-delta'];
+const LEGACY_SEED_IDS = ['org-1', 'org-2', ...LEGACY_SEED_TEAM_IDS, 'cp-1', 'cp-2', 'cp-3', 'cp-4'];
+
+async function purgeLegacySeed(): Promise<void> {
+  const teamIds = LEGACY_SEED_TEAM_IDS;
+  await pool.query(`DELETE FROM visits WHERE team_id = ANY($1) OR checkpoint_id = ANY($2)`, [teamIds, LEGACY_SEED_IDS]);
+  await pool.query(`DELETE FROM score_entries WHERE team_id = ANY($1)`, [teamIds]);
+  await pool.query(`DELETE FROM positions WHERE team_id = ANY($1)`, [teamIds]);
+  await pool.query(`DELETE FROM sessions WHERE team_id = ANY($1)`, [teamIds]);
+  await pool.query(`DELETE FROM organizers WHERE id = ANY($1)`, [LEGACY_SEED_IDS]);
+  await pool.query(`DELETE FROM teams WHERE id = ANY($1)`, [teamIds]);
+  await pool.query(`DELETE FROM checkpoints WHERE id = ANY($1)`, [LEGACY_SEED_IDS]);
 }
 
 let db: Db;
@@ -263,21 +253,30 @@ async function persistAll(d: Db): Promise<void> {
   }
 }
 
-/** Creates the schema and loads (or seeds) data. Resolves when ready. */
+/** Creates the schema, purges legacy demo seed and loads data. Resolves when ready. */
 export async function loadDb(): Promise<Db> {
   await pool.query(SCHEMA);
-  const existing = await pool.query<{ count: string }>(`SELECT count(*)::text AS count FROM teams`);
+  await purgeLegacySeed();
+  db = await loadFromDb();
+  const existing = await pool.query<{ count: string }>(
+    `SELECT count(*)::text AS count FROM settings WHERE key = 'adminCode'`,
+  );
   if (Number(existing.rows[0]?.count ?? '0') === 0) {
-    db = seed();
+    // persistAll upserts the default adminCode; keeps any data already loaded
     await persistAll(db);
-  } else {
-    db = await loadFromDb();
   }
   return db;
 }
 
-export async function saveDb(): Promise<void> {
-  await persistAll(db);
+// persistAll rewrites every table inside a transaction, so overlapping saves
+// (e.g. a position ping fire-and-forget during a delete) would block or fail
+// on row locks. Serialize all saves through one chain instead.
+let saveChain: Promise<void> = Promise.resolve();
+
+export function saveDb(): Promise<void> {
+  const next = saveChain.then(() => persistAll(db));
+  saveChain = next.catch(() => {});
+  return next;
 }
 
 export function getDb(): Db {
