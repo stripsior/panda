@@ -118,11 +118,7 @@ export default function StatusScreen() {
                   }}
                 >
                   <ThemedText>{cp.name}</ThemedText>
-                  {doneIds.has(cp.id) ? (
-                    <Badge tone="success">+{cp.points}</Badge>
-                  ) : (
-                    <Badge>{cp.points} pkt</Badge>
-                  )}
+                  {doneIds.has(cp.id) ? <Badge tone="success">✓</Badge> : null}
                 </View>
               ))}
             </Card>

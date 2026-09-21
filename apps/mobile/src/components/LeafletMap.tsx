@@ -55,7 +55,7 @@ window.setData = function (payload) {
     var m = L.circleMarker([cp.lat, cp.lng], {
       radius: 12, color: '#ffffff', weight: 2, fillColor: color, fillOpacity: 1
     });
-    m.bindTooltip(cp.name + (cp.visited ? ' ✓' : ' · ' + cp.points + ' pts'));
+    m.bindTooltip(cp.name + (cp.visited ? ' ✓' : ''));
     m.on('click', function () {
       window.ReactNativeWebView.postMessage(cp.id);
     });
