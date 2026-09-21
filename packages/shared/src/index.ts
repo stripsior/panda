@@ -71,12 +71,6 @@ export interface PlayerGameState {
   leaderboard: LeaderboardEntry[];
 }
 
-export interface CheckInRequest {
-  checkpointId: string;
-  lat?: number;
-  lng?: number;
-}
-
 export interface ReportPositionRequest {
   lat: number;
   lng: number;
