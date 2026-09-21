@@ -1,11 +1,10 @@
 import * as Location from 'expo-location';
-import type { CheckInRequest, PlayerGameState, Visit } from '@pandago/shared';
+import type { PlayerGameState } from '@pandago/shared';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Alert, Modal, View } from 'react-native';
+import { View } from 'react-native';
 import { api } from '../../src/api';
 import { useAuth } from '../../src/auth';
 import LeafletMap, { type MapCheckpoint, type MapUserLocation } from '../../src/components/LeafletMap';
-import { Button } from '../../src/components/ui/Button';
 import { ThemedText } from '../../src/components/ui/ThemedText';
 import { usePalette } from '../../src/components/ui/colors';
 import { POSITION_INTERVAL_MS } from '../../src/config';
@@ -15,12 +14,8 @@ export default function MapScreen() {
   const c = usePalette();
   const [state, setState] = useState<PlayerGameState | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
   const [userLocation, setUserLocation] = useState<MapUserLocation | null>(null);
   const coordsRef = useRef<MapUserLocation | null>(null);
-
-  const selected = state?.checkpoints.find((cp) => cp.id === selectedId) ?? null;
 
   const loadState = useCallback(async () => {
     if (!auth?.teamId) return;
@@ -62,7 +57,7 @@ export default function MapScreen() {
           },
         );
       } catch {
-        // GPS unavailable — check-ins and positions simply go without coords
+        // GPS unavailable — position reports simply stop
       }
     })();
     return () => {
@@ -81,31 +76,6 @@ export default function MapScreen() {
     }, POSITION_INTERVAL_MS);
     return () => clearInterval(id);
   }, [auth?.role]);
-
-  const submitCheckIn = async () => {
-    if (!selected || submitting) return;
-    setSubmitting(true);
-    try {
-      const body: CheckInRequest = {
-        checkpointId: selected.id,
-        ...(coordsRef.current ?? {}),
-      };
-      const visit = await api.post<Visit>('/checkins', body);
-      Alert.alert(
-        'Meldunek potwierdzony',
-        `${selected.name} · +${visit.points} pkt`,
-      );
-      setSelectedId(null);
-      await loadState();
-    } catch (e) {
-      Alert.alert(
-        'Meldunek nie powiódł się',
-        e instanceof Error ? e.message : 'Coś poszło nie tak',
-      );
-    } finally {
-      setSubmitting(false);
-    }
-  };
 
   const checkpoints: MapCheckpoint[] = (state?.checkpoints ?? []).map((cp) => ({
     id: cp.id,
@@ -129,7 +99,6 @@ export default function MapScreen() {
         <LeafletMap
           checkpoints={checkpoints}
           userLocation={userLocation}
-          onCheckpointPress={setSelectedId}
         />
       ) : (
         <View
@@ -138,54 +107,6 @@ export default function MapScreen() {
           <ThemedText variant="muted">Ładowanie punktów kontrolnych…</ThemedText>
         </View>
       )}
-
-      <Modal
-        visible={selected !== null}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setSelectedId(null)}
-      >
-        <View
-          style={{
-            flex: 1,
-            justifyContent: 'flex-end',
-            backgroundColor: 'rgba(0,0,0,0.4)',
-          }}
-        >
-          <View
-            style={{
-              backgroundColor: c.card,
-              borderTopLeftRadius: 20,
-              borderTopRightRadius: 20,
-              borderColor: c.border,
-              borderWidth: 1,
-              padding: 20,
-              gap: 12,
-            }}
-          >
-            <ThemedText variant="h2">{selected?.name ?? ''}</ThemedText>
-            <ThemedText variant="muted">
-              Zamelduj się, aby zdobyć {selected?.points} punktów. Organizator potwierdzi
-              meldunek na miejscu i w razie potrzeby skoryguje punkty.
-            </ThemedText>
-            <View style={{ flexDirection: 'row', gap: 12 }}>
-              <Button
-                label="Anuluj"
-                variant="outline"
-                onPress={() => setSelectedId(null)}
-                style={{ flex: 1 }}
-              />
-              <Button
-                label={submitting ? 'Zapisywanie…' : 'Zamelduj się'}
-                onPress={submitCheckIn}
-                loading={submitting}
-                disabled={submitting}
-                style={{ flex: 2 }}
-              />
-            </View>
-          </View>
-        </View>
-      </Modal>
     </View>
   );
 }

@@ -5,7 +5,6 @@ import type {
   AdminOverview,
   AuthResponse,
   AwardPointsRequest,
-  CheckInRequest,
   Checkpoint,
   CreateCheckpointRequest,
   CreateOrganizerRequest,
@@ -15,7 +14,6 @@ import type {
   ReportPositionRequest,
   Team,
   UpdateCheckpointRequest,
-  Visit,
 } from '@pandago/shared';
 import { getDb, loadDb, saveDb, newId } from './db.js';
 import { createSession, requireAuth, requireRole } from './auth.js';
@@ -109,44 +107,8 @@ app.get<{ Params: { id: string } }>(
   },
 );
 
-app.post<{ Body: CheckInRequest }>(
-  '/checkins',
-  { preHandler: requireRole('player') },
-  async (req, reply) => {
-    const { checkpointId } = req.body;
-    const db = getDb();
-    const teamId = req.session.teamId!;
-    const checkpoint = db.checkpoints.find((c) => c.id === checkpointId);
-    if (!checkpoint) return reply.code(404).send({ error: 'Nie znaleziono punktu kontrolnego' });
-
-    const already = db.visits.find(
-      (v) => v.teamId === teamId && v.checkpointId === checkpointId && v.status === 'confirmed',
-    );
-    if (already) return reply.code(409).send({ error: 'Ta drużyna zameldowała się już w tym punkcie' });
-
-    // No secret codes — organizers confirm everything on the spot, so a
-    // check-in is confirmed immediately and can be corrected with point
-    // adjustments afterwards.
-    const visit: Visit = {
-      id: randomUUID(),
-      teamId,
-      checkpointId,
-      status: 'confirmed',
-      points: checkpoint.points,
-      createdAt: new Date().toISOString(),
-    };
-    db.visits.push(visit);
-
-    const team = db.teams.find((t) => t.id === teamId)!;
-    team.score += checkpoint.points;
-    if (req.body.lat != null && req.body.lng != null) {
-      updatePosition(teamId, req.body.lat, req.body.lng);
-    }
-    await saveDb();
-
-    return reply.code(201).send(visit);
-  },
-);
+// Check-ins are intentionally not supported: players only see checkpoints on
+// the map; points are awarded on site by an organizer via POST /teams/:id/score.
 
 app.post<{ Body: ReportPositionRequest }>(
   '/positions',
