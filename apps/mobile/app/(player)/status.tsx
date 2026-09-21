@@ -117,7 +117,10 @@ export default function StatusScreen() {
                     justifyContent: 'space-between',
                   }}
                 >
-                  <ThemedText>{cp.name}</ThemedText>
+                  <ThemedText>
+                    <ThemedText variant="muted">{cp.orderIndex}. </ThemedText>
+                    {cp.name}
+                  </ThemedText>
                   {doneIds.has(cp.id) ? <Badge tone="success">✓</Badge> : null}
                 </View>
               ))}

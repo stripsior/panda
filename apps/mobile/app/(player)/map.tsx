@@ -83,6 +83,7 @@ export default function MapScreen() {
     lat: cp.lat,
     lng: cp.lng,
     points: cp.points,
+    orderIndex: cp.orderIndex,
     visited: (state?.visits ?? []).some(
       (v) => v.checkpointId === cp.id && v.status === 'confirmed',
     ),
