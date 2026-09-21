@@ -1,4 +1,5 @@
 import { Fragment, useCallback, useEffect, useState, type FormEvent } from 'react';
+import { Trash2 } from 'lucide-react';
 import type { ScoreEntry, Team } from '@pandago/shared';
 import { api } from '../api';
 import { Button } from '../components/ui/button';
@@ -61,6 +62,22 @@ export function TeamsPage() {
       setDialogError(err instanceof Error ? err.message : 'Operacja nie powiodła się');
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function remove(team: Team) {
+    if (!window.confirm(`Usunąć drużynę „${team.name}"? Usunie to też jej historię punktów i meldunki.`)) return;
+    try {
+      await api.deleteTeam(team.id);
+      setEntries((prev) => {
+        const next = { ...prev };
+        delete next[team.id];
+        return next;
+      });
+      if (expandedId === team.id) setExpandedId(null);
+      refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Nie udało się usunąć');
     }
   }
 
@@ -128,6 +145,14 @@ export function TeamsPage() {
                         }}
                       >
                         Punkty
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        className="h-8 w-8 p-0 text-destructive"
+                        onClick={() => remove(team)}
+                        aria-label={`Usuń ${team.name}`}
+                      >
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </TableCell>
                   </TableRow>

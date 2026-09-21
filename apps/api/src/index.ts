@@ -329,6 +329,24 @@ app.post<{ Body: { name: string } }>(
   },
 );
 
+app.delete<{ Params: { id: string } }>(
+  '/teams/:id',
+  { preHandler: requireRole('admin') },
+  async (req, reply) => {
+    const db = getDb();
+    if (!db.teams.some((t) => t.id === req.params.id)) {
+      return reply.code(404).send({ error: 'Nie znaleziono drużyny' });
+    }
+    db.teams = db.teams.filter((t) => t.id !== req.params.id);
+    db.visits = db.visits.filter((v) => v.teamId !== req.params.id);
+    db.scoreEntries = db.scoreEntries.filter((e) => e.teamId !== req.params.id);
+    db.positions = db.positions.filter((p) => p.teamId !== req.params.id);
+    db.sessions = db.sessions.filter((s) => s.teamId !== req.params.id);
+    await saveDb();
+    return reply.code(204).send();
+  },
+);
+
 // ---- admin: organizers (dynamic users) ----
 
 app.get(

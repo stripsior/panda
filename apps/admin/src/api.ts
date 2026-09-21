@@ -102,6 +102,8 @@ export const api = {
   getTeams: () => request<Team[]>('/teams'),
   createTeam: (name: string) =>
     request<Team>('/teams', { method: 'POST', body: JSON.stringify({ name }) }),
+  deleteTeam: (id: string) =>
+    request<void>(`/teams/${id}`, { method: 'DELETE' }),
   awardPoints: (teamId: string, delta: number, reason: string) =>
     request<Team>(`/teams/${teamId}/score`, {
       method: 'POST',
