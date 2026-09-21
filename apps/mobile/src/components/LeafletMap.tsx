@@ -53,10 +53,18 @@ window.setData = function (payload) {
   checkpointLayer.clearLayers();
   payload.checkpoints.forEach(function (cp) {
     var color = cp.visited ? '#16a34a' : '#18181b';
-    var m = L.circleMarker([cp.lat, cp.lng], {
-      radius: 12, color: '#ffffff', weight: 2, fillColor: color, fillOpacity: 1
+    var m = L.marker([cp.lat, cp.lng], {
+      interactive: true,
+      icon: L.divIcon({
+        className: '',
+        html: '<div style="width:26px;height:26px;border-radius:50%;background:' + color +
+          ';border:2px solid #ffffff;box-shadow:0 1px 4px rgba(0,0,0,0.4);color:#ffffff;' +
+          'font:600 13px/22px system-ui,sans-serif;text-align:center;">' + cp.orderIndex + '</div>',
+        iconSize: [26, 26],
+        iconAnchor: [13, 13]
+      })
     });
-    m.bindTooltip(cp.orderIndex + '. ' + cp.name + (cp.visited ? ' ✓' : ''));
+    m.bindTooltip(cp.name + (cp.visited ? ' ✓' : ''));
     m.on('click', function () {
       window.ReactNativeWebView.postMessage(cp.id);
     });
