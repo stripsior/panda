@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>PandaGo — wersja webowa</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    background: #09090b; color: #fafafa; display: flex; flex-direction: column;
+  }
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 14px; background: #09090b; border-bottom: 1px solid #27272a;
+    padding-top: calc(10px + env(safe-area-inset-top));
+  }
+  header b { font-size: 17px; }
+  button {
+    font: inherit; border: none; cursor: pointer; border-radius: 10px;
+    padding: 8px 12px; font-weight: 600;
+  }
+  .ghost { background: transparent; color: #a1a1aa; }
+  #map { flex: 1; min-height: 0; background: #18181b; }
+  .sheet {
+    background: #09090b; border-top: 1px solid #27272a;
+    padding: 14px 16px calc(14px + env(safe-area-inset-bottom));
+    max-height: 46vh; overflow-y: auto;
+  }
+  .card { background: #18181b; border: 1px solid #27272a; border-radius: 14px; padding: 14px; margin-bottom: 10px; }
+  .card h2 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: #a1a1aa; margin-bottom: 8px; }
+  .score { font-size: 34px; font-weight: 700; }
+  .row { display: flex; align-items: center; justify-content: space-between; padding: 5px 0; font-size: 15px; }
+  .muted { color: #a1a1aa; }
+  .num { color: #a1a1aa; margin-right: 6px; }
+  #qrbox { display: flex; justify-content: center; padding: 10px 0 4px; background: #fff; border-radius: 12px; margin-top: 6px; }
+  .leaflet-container { font: inherit; }
+  .leaflet-tooltip { background: #18181b; color: #fafafa; border: 1px solid #27272a; }
+  .leaflet-tooltip-top:before { border-top-color: #27272a; }
+  /* login */
+  #login {
+    flex: 1; display: flex; align-items: center; justify-content: center; padding: 24px;
+  }
+  #login form { width: 100%; max-width: 360px; text-align: center; }
+  #login h1 { font-size: 26px; margin-bottom: 6px; }
+  #login p { color: #a1a1aa; margin-bottom: 22px; }
+  #login input {
+    width: 100%; font: inherit; text-transform: uppercase; text-align: center;
+    padding: 14px; border-radius: 12px; border: 1px solid #27272a;
+    background: #18181b; color: #fafafa; margin-bottom: 10px;
+  }
+  .primary { background: #fafafa; color: #09090b; width: 100%; padding: 14px; }
+  .err { color: #ef4444; font-size: 14px; margin-top: 10px; min-height: 18px; }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<div id="login">
+  <form id="loginForm">
+    <h1>PandaGo</h1>
+    <p>Wersja webowa dla drużyn — podaj swój kod dostępu</p>
+    <input id="code" placeholder="np. TEAM-ZSA-C89B" autocomplete="off" autocapitalize="characters" required />
+    <button class="primary" type="submit">Zaloguj się</button>
+    <div class="err" id="loginErr"></div>
+  </form>
+</div>
+
+<div id="game" class="hidden" style="display:flex;flex-direction:column;flex:1;min-height:0;">
+  <header>
+    <b id="teamName">Drużyna</b>
+    <button class="ghost" id="logoutBtn">Wyloguj</button>
+  </header>
+  <div id="map"></div>
+  <div class="sheet">
+    <div class="card">
+      <h2>Wynik</h2>
+      <div class="score" id="score">0</div>
+    </div>
+    <div class="card">
+      <h2>QR drużyny</h2>
+      <div class="muted" style="font-size:14px">Pokaż organizatorowi, aby otrzymać punkty</div>
+      <div id="qrbox"></div>
+    </div>
+    <div class="card">
+      <h2>Punkty kontrolne</h2>
+      <div id="cpList"></div>
+    </div>
+    <div class="card">
+      <h2>Ranking</h2>
+      <div id="lbList"></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/qrcodejs@1.0.2/qrcode.min.js"></script>
+<script>
+'use strict';
+var API = 'https://panda.strikx.dev';
+var LS_KEY = 'pandago.web.session';
+
+var session = null;
+try { session = JSON.parse(localStorage.getItem(LS_KEY) || 'null'); } catch (e) { session = null; }
+
+function apiFetch(path, opts) {
+  opts = opts || {};
+  opts.headers = Object.assign({}, opts.headers,
+    session && session.token ? { Authorization: 'Bearer ' + session.token } : {},
+    opts.body ? { 'Content-Type': 'application/json' } : {});
+  return fetch(API + path, opts).then(function (res) {
+    if (res.status === 401) { doLogout(); throw new Error('Sesja wygasła — zaloguj się ponownie'); }
+    if (res.status === 204) return null;
+    return res.json().then(function (body) {
+      if (!res.ok) throw new Error(body && body.error ? body.error : 'Błąd połączenia (' + res.status + ')');
+      return body;
+    });
+  });
+}
+
+// ---- login ----
+var loginForm = document.getElementById('loginForm');
+var codeInput = document.getElementById('code');
+var loginErr = document.getElementById('loginErr');
+
+loginForm.addEventListener('submit', function (e) {
+  e.preventDefault();
+  loginErr.textContent = '';
+  var code = codeInput.value.trim();
+  if (!code) return;
+  fetch(API + '/auth/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ code: code })
+  }).then(function (res) {
+    return res.json().then(function (body) { return { ok: res.ok, body: body }; });
+  }).then(function (r) {
+    if (!r.ok) throw new Error(r.body && r.body.error ? r.body.error : 'Nieznany kod dostępu');
+    if (r.body.role !== 'player') {
+      throw new Error('Wersja webowa jest dla drużyn — organizatorzy używają aplikacji mobilnej');
+    }
+    session = r.body;
+    localStorage.setItem(LS_KEY, JSON.stringify(session));
+    showGame();
+  }).catch(function (err) { loginErr.textContent = err.message; });
+});
+
+function doLogout() {
+  var token = session && session.token;
+  session = null;
+  localStorage.removeItem(LS_KEY);
+  if (token) {
+    fetch(API + '/auth/logout', { method: 'POST', headers: { Authorization: 'Bearer ' + token } }).catch(function () {});
+  }
+  document.getElementById('game').classList.add('hidden');
+  document.getElementById('login').classList.remove('hidden');
+  codeInput.value = '';
+}
+document.getElementById('logoutBtn').addEventListener('click', doLogout);
+
+// ---- game ----
+var map = null, markerLayer = null, userMarker = null, didFit = false;
+var lastSent = 0;
+
+function showGame() {
+  document.getElementById('login').classList.add('hidden');
+  document.getElementById('game').classList.remove('hidden');
+  if (!map) {
+    map = L.map('map', { zoomControl: false, attributionControl: true });
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19, attribution: '&copy; OpenStreetMap'
+    }).addTo(map);
+    markerLayer = L.layerGroup().addTo(map);
+  }
+  loadState();
+  watchLocation();
+}
+
+function loadState() {
+  apiFetch('/teams/' + session.teamId + '/state').then(function (state) {
+    document.getElementById('teamName').textContent = state.team.name;
+    document.getElementById('score').textContent = state.team.score;
+
+    var qrbox = document.getElementById('qrbox');
+    qrbox.innerHTML = '';
+    new QRCode(qrbox, { text: 'pandago:team:' + state.team.id, width: 176, height: 176 });
+
+    var sorted = state.checkpoints.slice().sort(function (a, b) { return a.orderIndex - b.orderIndex; });
+    document.getElementById('cpList').innerHTML = sorted.map(function (cp) {
+      return '<div class="row"><span><span class="num">' + cp.orderIndex + '.</span>' + escapeHtml(cp.name) + '</span></div>';
+    }).join('');
+
+    document.getElementById('lbList').innerHTML = state.leaderboard.map(function (e, i) {
+      var bold = e.teamId === state.team.id ? ' style="font-weight:600"' : '';
+      return '<div class="row"' + bold + '><span>' + (i + 1) + '. ' + escapeHtml(e.teamName) + '</span><span class="muted">' + e.score + '</span></div>';
+    }).join('');
+
+    var bounds = [];
+    markerLayer.clearLayers();
+    sorted.forEach(function (cp) {
+      var m = L.marker([cp.lat, cp.lng], {
+        icon: L.divIcon({
+          className: '',
+          html: '<div style="width:26px;height:26px;border-radius:50%;background:#18181b;border:2px solid #ffffff;box-shadow:0 1px 4px rgba(0,0,0,.4);color:#fff;font:600 13px/22px system-ui,sans-serif;text-align:center">' + cp.orderIndex + '</div>',
+          iconSize: [26, 26], iconAnchor: [13, 13]
+        })
+      });
+      m.bindTooltip(cp.name);
+      m.addTo(markerLayer);
+      bounds.push([cp.lat, cp.lng]);
+    });
+    if (userMarker) bounds.push(userMarker.getLatLng());
+    if (!didFit && bounds.length) { map.fitBounds(bounds, { padding: [24, 24] }); didFit = true; }
+  }).catch(function (err) {
+    document.getElementById('score').textContent = '!';
+    document.getElementById('cpList').innerHTML = '<span class="muted">' + escapeHtml(err.message) + '</span>';
+  });
+}
+
+function watchLocation() {
+  if (!navigator.geolocation) return;
+  navigator.geolocation.watchPosition(function (pos) {
+    var ll = [pos.coords.latitude, pos.coords.longitude];
+    if (userMarker) userMarker.setLatLng(ll);
+    else {
+      userMarker = L.circleMarker(ll, {
+        radius: 8, color: '#ffffff', weight: 2, fillColor: '#2563eb', fillOpacity: 1
+      }).addTo(map);
+    }
+    if (!didFit) { map.setView(ll, 15); didFit = true; }
+    var now = Date.now();
+    if (now - lastSent > 15000) {
+      lastSent = now;
+      apiFetch('/positions', { method: 'POST', body: JSON.stringify({ lat: ll[0], lng: ll[1] }) }).catch(function () {});
+    }
+  }, function () {}, { enableHighAccuracy: true, maximumAge: 5000 });
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, function (ch) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch];
+  });
+}
+
+setInterval(function () { if (session) loadState(); }, 30000);
+if (session && session.token) {
+  // validate stored session before showing the game
+  apiFetch('/me').then(function () { showGame(); }).catch(function () {});
+}
+</script>
+</body>
+</html>
