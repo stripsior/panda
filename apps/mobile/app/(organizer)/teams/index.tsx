@@ -4,6 +4,7 @@ import { Pressable, RefreshControl, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { api } from '../../../src/api';
+import { useAuth } from '../../../src/auth';
 import { Button } from '../../../src/components/ui/Button';
 import { Card } from '../../../src/components/ui/Card';
 import { ThemedText } from '../../../src/components/ui/ThemedText';
@@ -11,6 +12,7 @@ import { usePalette } from '../../../src/components/ui/colors';
 
 export default function TeamsScreen() {
   const c = usePalette();
+  const { logout } = useAuth();
   const [teams, setTeams] = useState<Team[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -42,7 +44,24 @@ export default function TeamsScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-        <ThemedText variant="h1">Drużyny</ThemedText>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
+          <ThemedText variant="h1">Drużyny</ThemedText>
+          <Button
+            label="Wyloguj"
+            variant="ghost"
+            onPress={() => {
+              void logout();
+              router.replace('/login');
+            }}
+            style={{ height: 36, paddingHorizontal: 8 }}
+          />
+        </View>
         <Button label="Skanuj QR drużyny" onPress={() => router.push('/(organizer)/scan')} />
         {error ? <ThemedText style={{ color: c.destructive }}>{error}</ThemedText> : null}
         {(teams ?? []).map((team) => (

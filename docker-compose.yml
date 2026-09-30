@@ -41,5 +41,13 @@ services:
     depends_on:
       - api
 
+  web:
+    image: ghcr.io/stripsior/panda-web:latest
+    restart: unless-stopped
+    expose:
+      - '80'
+    depends_on:
+      - api
+
 volumes:
   pandago-pgdata:

@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
-import { Map, Flag, Users, UserCog, LogOut } from 'lucide-react';
+import { Map, Flag, Users, UserCog, LogOut, Menu, X } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { getStoredSession, logout } from '../api';
 import { Button } from './ui/button';
@@ -19,11 +20,41 @@ const nav = [
 
 export function Layout() {
   const session = getStoredSession();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   return (
     <div className="flex min-h-screen">
-      <aside className="flex w-56 shrink-0 flex-col border-r border-border bg-card">
-        <div className="flex h-14 items-center gap-2 border-b border-border px-4">
+      {/* mobile top bar */}
+      <div className="fixed inset-x-0 top-0 z-30 flex h-14 items-center justify-between border-b border-border bg-card px-4 md:hidden">
+        <div className="flex items-center gap-2">
+          <img src="/panda-logo.png" alt="PandaGo" className="h-8 w-8 rounded-lg object-cover" />
+          <span className="font-medium tracking-tight">PandaGo Admin</span>
+        </div>
+        <Button
+          variant="ghost"
+          className="h-9 w-9 p-0"
+          onClick={() => setMenuOpen((v) => !v)}
+          aria-label={menuOpen ? 'Zamknij menu' : 'Otwórz menu'}
+        >
+          {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+        </Button>
+      </div>
+
+      {/* backdrop for the mobile drawer */}
+      {menuOpen && (
+        <div
+          className="fixed inset-0 z-30 bg-black/60 md:hidden"
+          onClick={() => setMenuOpen(false)}
+        />
+      )}
+
+      <aside
+        className={cn(
+          'fixed inset-y-0 left-0 z-40 flex w-56 shrink-0 flex-col border-r border-border bg-card transition-transform md:static md:translate-x-0',
+          menuOpen ? 'translate-x-0' : '-translate-x-full',
+        )}
+      >
+        <div className="flex h-14 items-center gap-2 border-b border-border px-4 max-md:mt-14">
           <img src="/panda-logo.png" alt="PandaGo" className="h-8 w-8 rounded-lg object-cover" />
           <span className="font-medium tracking-tight">PandaGo Admin</span>
         </div>
@@ -33,6 +64,7 @@ export function Layout() {
               key={to}
               to={to}
               end={to === '/'}
+              onClick={() => setMenuOpen(false)}
               className={({ isActive }) =>
                 cn(
                   'flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground',
@@ -56,8 +88,8 @@ export function Layout() {
           </Button>
         </div>
       </aside>
-      <main className="flex-1 overflow-auto">
-        <div className="mx-auto max-w-6xl p-6">
+      <main className="flex-1 overflow-auto max-md:pt-14">
+        <div className="mx-auto max-w-6xl p-4 sm:p-6">
           <Outlet />
         </div>
       </main>

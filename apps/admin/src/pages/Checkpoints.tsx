@@ -169,7 +169,7 @@ export function CheckpointsPage() {
           <Field label="Nazwa">
             <Input value={form.name} onChange={set('name')} placeholder="Fontanna na Rynku" required />
           </Field>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label="Szerokość geograficzna">
               <Input type="number" step="any" value={form.lat} onChange={set('lat')} placeholder="50.0616" required />
             </Field>
@@ -177,7 +177,7 @@ export function CheckpointsPage() {
               <Input type="number" step="any" value={form.lng} onChange={set('lng')} placeholder="19.9373" required />
             </Field>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label="Punkty">
               <Input type="number" value={form.points} onChange={set('points')} />
             </Field>
