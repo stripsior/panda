@@ -29,6 +29,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Fetch latest APK into the web image
+        if: matrix.name == 'panda-web'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p apps/web/apk
+          gh release download --repo stripsior/panda --pattern 'PandaGo.apk' --dir apps/web/apk --clobber
+
       - uses: docker/setup-buildx-action@v3
 
       - uses: docker/login-action@v3
