@@ -19,7 +19,7 @@ jobs:
         working-directory: apps/mobile/android
     env:
       # Production API — baked into the JS bundle at build time.
-      EXPO_PUBLIC_API_URL: https://panda.strikx.dev
+      EXPO_PUBLIC_API_URL: https://api.strikx.dev
 
     steps:
       - uses: actions/checkout@v4
