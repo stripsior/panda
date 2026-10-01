@@ -193,6 +193,7 @@ var orgExpanded = null; // team id with the award form open
 
 function showOrganizer() {
   document.getElementById('login').classList.add('hidden');
+  document.getElementById('game').classList.add('hidden');
   document.getElementById('organizer').classList.remove('hidden');
   document.getElementById('orgName').textContent = session.displayName || 'Organizator';
   loadTeams();
@@ -267,6 +268,7 @@ var lastSent = 0;
 
 function showGame() {
   document.getElementById('login').classList.add('hidden');
+  document.getElementById('organizer').classList.add('hidden');
   document.getElementById('game').classList.remove('hidden');
   if (!map) {
     map = L.map('map', { zoomControl: false, attributionControl: true });
