@@ -1,6 +1,6 @@
 // Backend base URL.
 // EXPO_PUBLIC_API_URL is inlined at bundle time — production builds (e.g. in
-// GitHub Actions) bake in https://panda.strikx.dev.
+// GitHub Actions) bake in https://api.strikx.dev.
 // Local dev defaults:
 // - iOS simulator / Expo Go on the same machine: http://localhost:3001
 // - Android emulator: the host machine is reachable as 10.0.2.2

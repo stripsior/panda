@@ -1,8 +1,9 @@
 # Docker Compose for Dokploy.
 # Deploy: create a project in Dokploy, choose "Docker Compose" as the source,
 # paste this file (or connect the repo and point at it), then:
-#   - API:    assign domain  api.panda.strikx.dev  (or panda.strikx.dev)  -> port 3001
-#   - Admin:  assign domain  admin.panda.strikx.dev                      -> port 80
+#   - API:    assign domain  api.strikx.dev     -> port 3001
+#   - Admin:  assign domain  admin.panda.strikx.dev (or another subdomain) -> port 80
+#   - Web:    assign domain  panda.strikx.dev   -> port 80  (homepage at /, web player at /app/)
 # Traefik routing is configured in the Dokploy UI; no labels needed here.
 
 services:

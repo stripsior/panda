@@ -1,5 +1,5 @@
 # Build from the monorepo root:
-#   docker build -f apps/admin/Dockerfile --build-arg VITE_API_BASE_URL=https://panda.strikx.dev -t panda-admin .
+#   docker build -f apps/admin/Dockerfile --build-arg VITE_API_BASE_URL=https://api.strikx.dev -t panda-admin .
 FROM node:20-alpine AS build
 WORKDIR /app
 
@@ -11,7 +11,7 @@ RUN npm ci --workspace @pandago/admin --workspace @pandago/shared --include-work
 COPY packages/shared packages/shared
 COPY apps/admin apps/admin
 
-ARG VITE_API_BASE_URL=https://panda.strikx.dev
+ARG VITE_API_BASE_URL=https://api.strikx.dev
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 RUN npm run build -w apps/admin
 

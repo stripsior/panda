@@ -22,7 +22,7 @@ jobs:
             dockerfile: apps/api/Dockerfile
           - name: panda-admin
             dockerfile: apps/admin/Dockerfile
-            build-args: VITE_API_BASE_URL=https://panda.strikx.dev
+            build-args: VITE_API_BASE_URL=https://api.strikx.dev
           - name: panda-web
             dockerfile: apps/web/Dockerfile
 
