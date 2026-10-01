@@ -16,7 +16,7 @@ export default function TeamDetailScreen() {
   const [team, setTeam] = useState<Team | null>(null);
   const [entries, setEntries] = useState<ScoreEntry[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [delta, setDelta] = useState(10);
+  const [delta, setDelta] = useState(1);
   const [reason, setReason] = useState('');
   const [busy, setBusy] = useState(false);
 
@@ -81,18 +81,18 @@ export default function TeamDetailScreen() {
             }}
           >
             <Button
-              label="−10"
+              label="−"
               variant="outline"
-              onPress={() => setDelta((d) => d - 10)}
+              onPress={() => setDelta((d) => d - 1)}
               style={{ flex: 1 }}
             />
             <ThemedText variant="h1" style={{ fontSize: 28, minWidth: 72, textAlign: 'center' }}>
               {delta > 0 ? `+${delta}` : delta}
             </ThemedText>
             <Button
-              label="+10"
+              label="+"
               variant="outline"
-              onPress={() => setDelta((d) => d + 10)}
+              onPress={() => setDelta((d) => d + 1)}
               style={{ flex: 1 }}
             />
           </View>

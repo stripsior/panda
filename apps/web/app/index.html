@@ -67,8 +67,17 @@
   .team-card .pts { font-size: 22px; font-weight: 700; }
   .team-card .code { font-size: 12px; color: #a1a1aa; margin-top: 2px; }
   .award { margin-top: 12px; border-top: 1px solid #27272a; padding-top: 12px; }
-  .award .grid { display: grid; grid-template-columns: 1fr 2fr; gap: 8px; }
-  .award input {
+  .award .grid { display: grid; grid-template-columns: auto 1fr; gap: 8px; align-items: center; }
+  .stepper { display: flex; gap: 4px; align-items: center; }
+  .stepper input {
+    width: 64px; text-align: center; font: inherit; padding: 10px 4px; border-radius: 10px;
+    border: 1px solid #27272a; background: #09090b; color: #fafafa;
+  }
+  .stepper button {
+    width: 42px; height: 42px; padding: 0; font-size: 20px;
+    background: #09090b; color: #fafafa; border: 1px solid #27272a; border-radius: 10px;
+  }
+  .award input[type="text"] {
     width: 100%; font: inherit; padding: 10px; border-radius: 10px;
     border: 1px solid #27272a; background: #09090b; color: #fafafa;
   }
@@ -258,7 +267,11 @@ function renderTeams(teams) {
       '<div class="code">' + escapeHtml(t.joinCode) + '</div>' +
       '<div class="award" id="award-' + t.id + '"' + (open ? '' : ' style="display:none"') + '>' +
         '<div class="grid">' +
-          '<input type="number" id="delta-' + t.id + '" placeholder="±pkt" />' +
+          '<div class="stepper">' +
+            '<button type="button" class="stepBtn" data-team="' + t.id + '" data-step="-1">−</button>' +
+            '<input type="number" id="delta-' + t.id + '" value="1" step="1" inputmode="numeric" aria-label="Punkty" />' +
+            '<button type="button" class="stepBtn" data-team="' + t.id + '" data-step="1">+</button>' +
+          '</div>' +
           '<input type="text" id="reason-' + t.id + '" placeholder="Powód (np. zadanie)" />' +
         '</div>' +
         '<button data-team="' + t.id + '" class="awardBtn">Zastosuj punkty</button>' +
@@ -270,6 +283,15 @@ function renderTeams(teams) {
 
 // tap a card anywhere to reveal/hide its award form (buttons inside stop the toggle)
 document.getElementById('orgList').addEventListener('click', function (e) {
+  var step = e.target.closest ? e.target.closest('.stepBtn') : null;
+  if (step) {
+    var sid = step.getAttribute('data-team');
+    var input = document.getElementById('delta-' + sid);
+    var val = parseInt(input.value, 10);
+    if (Number.isNaN(val)) val = 0;
+    input.value = val + parseInt(step.getAttribute('data-step'), 10);
+    return;
+  }
   var btn = e.target.closest ? e.target.closest('.awardBtn') : null;
   if (btn) {
     var id = btn.getAttribute('data-team');
