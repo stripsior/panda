@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>PandaGo — wersja webowa</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <style>
@@ -23,11 +23,14 @@
     padding: 8px 12px; font-weight: 600;
   }
   .ghost { background: transparent; color: #a1a1aa; }
-  #map { flex: 1; min-height: 0; background: #18181b; }
+  /* fixed inset instead of 100% flex chain — iOS Safari computes flex
+     heights unreliably around the URL bar, which left the map 0px tall */
+  #game { position: fixed; inset: 0; display: flex; flex-direction: column; }
+  #map { flex: 1; min-height: 120px; background: #18181b; }
   .sheet {
     background: #09090b; border-top: 1px solid #27272a;
     padding: 14px 16px calc(14px + env(safe-area-inset-bottom));
-    max-height: 46vh; overflow-y: auto;
+    max-height: 46vh; overflow-y: auto; flex-shrink: 0;
   }
   .card { background: #18181b; border: 1px solid #27272a; border-radius: 14px; padding: 14px; margin-bottom: 10px; }
   .card h2 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: #a1a1aa; margin-bottom: 8px; }
@@ -35,7 +38,8 @@
   .row { display: flex; align-items: center; justify-content: space-between; padding: 5px 0; font-size: 15px; }
   .muted { color: #a1a1aa; }
   .num { color: #a1a1aa; margin-right: 6px; }
-  #qrbox { display: flex; justify-content: center; padding: 10px 0 4px; background: #fff; border-radius: 12px; margin-top: 6px; }
+  #qrbox { display: flex; justify-content: center; align-items: center; padding: 10px; background: #fff; border-radius: 12px; margin-top: 6px; }
+  #qrbox svg { width: 200px; height: 200px; display: block; }
   .leaflet-container { font: inherit; }
   .leaflet-tooltip { background: #18181b; color: #fafafa; border: 1px solid #27272a; }
   .leaflet-tooltip-top:before { border-top-color: #27272a; }
@@ -68,7 +72,7 @@
   </form>
 </div>
 
-<div id="game" class="hidden" style="display:flex;flex-direction:column;flex:1;min-height:0;">
+<div id="game" class="hidden">
   <header>
     <b id="teamName">Drużyna</b>
     <button class="ghost" id="logoutBtn">Wyloguj</button>
@@ -96,7 +100,7 @@
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://unpkg.com/qrcodejs@1.0.2/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
 <script>
 'use strict';
 var API = 'https://api.strikx.dev';
@@ -173,7 +177,15 @@ function showGame() {
       maxZoom: 19, attribution: '&copy; OpenStreetMap'
     }).addTo(map);
     markerLayer = L.layerGroup().addTo(map);
+    // iOS Safari lays the page out late around the URL bar; re-measure once
+    // it settles and on every resize/rotation or the map stays grey.
+    setTimeout(function () { map.invalidateSize(); }, 100);
+    window.addEventListener('resize', function () { map.invalidateSize(); });
+    window.addEventListener('orientationchange', function () {
+      setTimeout(function () { map.invalidateSize(); }, 250);
+    });
   }
+  map.invalidateSize();
   loadState();
   watchLocation();
 }
@@ -184,8 +196,13 @@ function loadState() {
     document.getElementById('score').textContent = state.team.score;
 
     var qrbox = document.getElementById('qrbox');
-    qrbox.innerHTML = '';
-    new QRCode(qrbox, { text: 'pandago:team:' + state.team.id, width: 176, height: 176 });
+    if (qrbox.dataset.teamId !== state.team.id) {
+      qrbox.dataset.teamId = state.team.id;
+      var qr = qrcode(0, 'M');
+      qr.addData('pandago:team:' + state.team.id);
+      qr.make();
+      qrbox.innerHTML = qr.createSvgTag({ cellSize: 4, margin: 2, scalable: true });
+    }
 
     var sorted = state.checkpoints.slice().sort(function (a, b) { return a.orderIndex - b.orderIndex; });
     document.getElementById('cpList').innerHTML = sorted.map(function (cp) {
