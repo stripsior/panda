@@ -74,6 +74,24 @@
   }
   .award button { background: #fafafa; color: #09090b; margin-top: 8px; width: 100%; padding: 10px; }
   .award .msg { font-size: 13px; margin-top: 6px; min-height: 16px; }
+  /* QR scanner overlay */
+  #scan { position: fixed; inset: 0; z-index: 50; background: #000; display: flex; flex-direction: column; }
+  #scan video { flex: 1; width: 100%; min-height: 0; object-fit: cover; }
+  #scan .scan-top {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 14px; padding-top: calc(10px + env(safe-area-inset-top));
+    background: #000; color: #fafafa;
+  }
+  #scan .scan-hint {
+    padding: 14px; padding-bottom: calc(14px + env(safe-area-inset-bottom));
+    text-align: center; color: #a1a1aa; background: #000; font-size: 14px;
+  }
+  /* player locate button */
+  .locate {
+    background: #18181b; color: #fafafa; border: 1px solid #27272a;
+    border-radius: 10px; padding: 8px 10px; margin-right: 8px; font-size: 16px;
+  }
+  .geo-err { color: #ef4444; font-size: 13px; margin-top: 6px; }
 </style>
 </head>
 <body>
@@ -91,13 +109,17 @@
 <div id="game" class="hidden">
   <header>
     <b id="teamName">Drużyna</b>
-    <button class="ghost" id="logoutBtn">Wyloguj</button>
+    <span style="display:flex;align-items:center">
+      <button class="locate" id="locateBtn" aria-label="Pokaż moją lokalizację">◎</button>
+      <button class="ghost" id="logoutBtn">Wyloguj</button>
+    </span>
   </header>
   <div id="map"></div>
   <div class="sheet">
     <div class="card">
       <h2>Wynik</h2>
       <div class="score" id="score">0</div>
+      <div class="geo-err" id="geoMsg" style="display:none"></div>
     </div>
     <div class="card">
       <h2>QR drużyny</h2>
@@ -118,13 +140,26 @@
 <div id="organizer" class="hidden">
   <header>
     <b id="orgName">Organizator</b>
-    <button class="ghost" id="orgLogoutBtn">Wyloguj</button>
+    <span style="display:flex;align-items:center">
+      <button class="locate" id="scanBtn" aria-label="Skanuj QR drużyny">⌗</button>
+      <button class="ghost" id="orgLogoutBtn">Wyloguj</button>
+    </span>
   </header>
   <div id="orgList"></div>
 </div>
 
+<div id="scan" class="hidden">
+  <div class="scan-top">
+    <b>Skanuj QR drużyny</b>
+    <button class="ghost" id="scanClose">Zamknij</button>
+  </div>
+  <video id="scanVideo" playsinline muted autoplay></video>
+  <div class="scan-hint" id="scanHint">Wyceluj aparat w kod QR drużyny</div>
+</div>
+
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 <script>
 'use strict';
 var API = 'https://api.strikx.dev';
@@ -202,7 +237,6 @@ function showOrganizer() {
 function loadTeams() {
   apiFetch('/teams').then(function (teams) {
     // keep an open award form intact while scores refresh
-    var list = document.getElementById('orgList');
     if (orgExpanded && document.getElementById('award-' + orgExpanded)) {
       teams.forEach(function (t) {
         var pts = document.getElementById('pts-' + t.id);
@@ -210,24 +244,28 @@ function loadTeams() {
       });
       return;
     }
-    list.innerHTML = teams.map(function (t) {
-      var open = t.id === orgExpanded;
-      return '<div class="team-card">' +
-        '<div class="trow"><b>' + escapeHtml(t.name) + '</b><span class="pts" id="pts-' + t.id + '">' + t.score + '</span></div>' +
-        '<div class="code">' + escapeHtml(t.joinCode) + '</div>' +
-        '<div class="award" id="award-' + t.id + '"' + (open ? '' : ' style="display:none"') + '>' +
-          '<div class="grid">' +
-            '<input type="number" id="delta-' + t.id + '" placeholder="±pkt" />' +
-            '<input type="text" id="reason-' + t.id + '" placeholder="Powód (np. zadanie)" />' +
-          '</div>' +
-          '<button data-team="' + t.id + '" class="awardBtn">Zastosuj punkty</button>' +
-          '<div class="msg" id="msg-' + t.id + '"></div>' +
-        '</div>' +
-      '</div>';
-    }).join('');
+    renderTeams(teams);
   }).catch(function (err) {
     document.getElementById('orgList').innerHTML = '<p class="muted">' + escapeHtml(err.message) + '</p>';
   });
+}
+
+function renderTeams(teams) {
+  document.getElementById('orgList').innerHTML = teams.map(function (t) {
+    var open = t.id === orgExpanded;
+    return '<div class="team-card">' +
+      '<div class="trow"><b>' + escapeHtml(t.name) + '</b><span class="pts" id="pts-' + t.id + '">' + t.score + '</span></div>' +
+      '<div class="code">' + escapeHtml(t.joinCode) + '</div>' +
+      '<div class="award" id="award-' + t.id + '"' + (open ? '' : ' style="display:none"') + '>' +
+        '<div class="grid">' +
+          '<input type="number" id="delta-' + t.id + '" placeholder="±pkt" />' +
+          '<input type="text" id="reason-' + t.id + '" placeholder="Powód (np. zadanie)" />' +
+        '</div>' +
+        '<button data-team="' + t.id + '" class="awardBtn">Zastosuj punkty</button>' +
+        '<div class="msg" id="msg-' + t.id + '"></div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
 }
 
 // tap a card anywhere to reveal/hide its award form (buttons inside stop the toggle)
@@ -335,23 +373,137 @@ function loadState() {
   });
 }
 
+function geoError(msg) {
+  var el = document.getElementById('geoMsg');
+  el.textContent = msg;
+  el.style.display = '';
+}
+
+function updateUserMarker(lat, lng) {
+  var ll = [lat, lng];
+  if (userMarker) userMarker.setLatLng(ll);
+  else {
+    userMarker = L.circleMarker(ll, {
+      radius: 8, color: '#ffffff', weight: 2, fillColor: '#2563eb', fillOpacity: 1
+    }).addTo(map);
+  }
+  return ll;
+}
+
+function sendPosition(lat, lng) {
+  var now = Date.now();
+  if (now - lastSent > 15000) {
+    lastSent = now;
+    apiFetch('/positions', { method: 'POST', body: JSON.stringify({ lat: lat, lng: lng }) }).catch(function () {});
+  }
+}
+
 function watchLocation() {
-  if (!navigator.geolocation) return;
+  if (!navigator.geolocation) {
+    geoError('Ta przeglądarka nie udostępnia lokalizacji');
+    return;
+  }
   navigator.geolocation.watchPosition(function (pos) {
-    var ll = [pos.coords.latitude, pos.coords.longitude];
-    if (userMarker) userMarker.setLatLng(ll);
-    else {
-      userMarker = L.circleMarker(ll, {
-        radius: 8, color: '#ffffff', weight: 2, fillColor: '#2563eb', fillOpacity: 1
-      }).addTo(map);
-    }
+    document.getElementById('geoMsg').style.display = 'none';
+    var ll = updateUserMarker(pos.coords.latitude, pos.coords.longitude);
     if (!didFit) { map.setView(ll, 15); didFit = true; }
-    var now = Date.now();
-    if (now - lastSent > 15000) {
-      lastSent = now;
-      apiFetch('/positions', { method: 'POST', body: JSON.stringify({ lat: ll[0], lng: ll[1] }) }).catch(function () {});
+    sendPosition(pos.coords.latitude, pos.coords.longitude);
+  }, function (err) {
+    if (err.code === err.PERMISSION_DENIED) geoError('Brak dostępu do lokalizacji — zgódź się w ustawieniach przeglądarki');
+    else if (err.code === err.POSITION_UNAVAILABLE) geoError('Nie udało się ustalić pozycji');
+    else if (err.code === err.TIMEOUT) geoError('Ustalanie pozycji przekroczyło czas — spróbuj na otwartej przestrzeni');
+  }, { enableHighAccuracy: true, maximumAge: 5000, timeout: 20000 });
+}
+
+document.getElementById('locateBtn').addEventListener('click', function () {
+  if (userMarker) { map.setView(userMarker.getLatLng(), 16); return; }
+  if (!navigator.geolocation) return;
+  navigator.geolocation.getCurrentPosition(function (pos) {
+    var ll = updateUserMarker(pos.coords.latitude, pos.coords.longitude);
+    map.setView(ll, 16);
+  }, function (err) {
+    geoError(err.code === err.PERMISSION_DENIED
+      ? 'Brak dostępu do lokalizacji — zgódź się w ustawieniach przeglądarki'
+      : 'Nie udało się ustalić pozycji');
+  }, { enableHighAccuracy: true, timeout: 20000 });
+});
+
+// ---- organizer: camera QR scanner (jsQR — Safari has no BarcodeDetector) ----
+var scanStream = null, scanRAF = 0;
+var scanCanvas = document.createElement('canvas');
+var scanCtx = scanCanvas.getContext('2d', { willReadFrequently: true });
+
+document.getElementById('scanBtn').addEventListener('click', function () {
+  openScan();
+});
+document.getElementById('scanClose').addEventListener('click', closeScan);
+
+function openScan() {
+  var video = document.getElementById('scanVideo');
+  var hint = document.getElementById('scanHint');
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    hint.textContent = 'Ta przeglądarka nie obsługuje aparatu';
+    document.getElementById('scan').classList.remove('hidden');
+    return;
+  }
+  navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false })
+    .then(function (stream) {
+      scanStream = stream;
+      video.srcObject = stream;
+      video.setAttribute('playsinline', 'true');
+      video.play();
+      hint.textContent = 'Wyceluj aparat w kod QR drużyny';
+      document.getElementById('scan').classList.remove('hidden');
+      scanLoop();
+    })
+    .catch(function () {
+      hint.textContent = 'Brak dostępu do aparatu — zgódź się w ustawieniach przeglądarki';
+      document.getElementById('scan').classList.remove('hidden');
+    });
+}
+
+function closeScan() {
+  if (scanRAF) { cancelAnimationFrame(scanRAF); scanRAF = 0; }
+  if (scanStream) { scanStream.getTracks().forEach(function (t) { t.stop(); }); scanStream = null; }
+  document.getElementById('scanVideo').srcObject = null;
+  document.getElementById('scan').classList.add('hidden');
+}
+
+function scanLoop() {
+  var video = document.getElementById('scanVideo');
+  if (!scanStream) return;
+  if (video.readyState === video.HAVE_ENOUGH_DATA) {
+    var w = 320, h = Math.round(320 * (video.videoHeight / (video.videoWidth || 1))) || 240;
+    scanCanvas.width = w; scanCanvas.height = h;
+    scanCtx.drawImage(video, 0, 0, w, h);
+    var img = scanCtx.getImageData(0, 0, w, h);
+    var res = jsQR(img.data, w, h, { inversionAttempts: 'dontInvert' });
+    if (res && res.data && res.data.indexOf('pandago:team:') === 0) {
+      var teamId = res.data.slice('pandago:team:'.length);
+      closeScan();
+      onTeamScanned(teamId);
+      return;
     }
-  }, function () {}, { enableHighAccuracy: true, maximumAge: 5000 });
+  }
+  scanRAF = requestAnimationFrame(scanLoop);
+}
+
+function onTeamScanned(teamId) {
+  apiFetch('/teams').then(function (teams) {
+    var team = teams.find(function (t) { return t.id === teamId; });
+    if (!team) {
+      alert('Nieznana drużyna (kod z innej gry?)');
+      return;
+    }
+    orgExpanded = team.id;
+    renderTeams(teams);
+    var card = document.getElementById('award-' + team.id);
+    if (card) {
+      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      var reason = document.getElementById('reason-' + team.id);
+      if (reason) reason.focus();
+    }
+  });
 }
 
 function escapeHtml(s) {
