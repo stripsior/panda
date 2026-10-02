@@ -40,7 +40,7 @@
   </svg>
   <h1>PandaGo</h1>
   <p class="sub">Gra terenowa — zdobądź punkty,<br />wykonując zadania na punktach kontrolnych.</p>
-  <a class="btn primary" href="/apk/PandaGo.apk" download>
+  <a class="btn primary" id="apkLink" href="/apk/PandaGo.apk" download>
     Pobierz aplikację (Android)
   </a>
   <a class="btn secondary" href="/app/">
@@ -48,5 +48,11 @@
   </a>
   <p class="hint">Wersja webowa działa w przeglądarce — nic nie instalujesz.</p>
 </main>
+<script>
+  // bust Cloudflare's APK edge cache: link to the exact released version
+  fetch('/apk/VERSION').then(function (r) { return r.ok ? r.text() : null; }).then(function (v) {
+    if (v) document.getElementById('apkLink').href = '/apk/PandaGo.apk?v=' + encodeURIComponent(v.trim());
+  });
+</script>
 </body>
 </html>

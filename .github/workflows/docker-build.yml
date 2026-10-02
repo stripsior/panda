@@ -36,6 +36,7 @@ jobs:
         run: |
           mkdir -p apps/web/apk
           gh release download --repo stripsior/panda --pattern 'PandaGo.apk' --dir apps/web/apk --clobber
+          gh release view --repo stripsior/panda --json tagName --jq .tagName > apps/web/apk/VERSION
 
       - uses: docker/setup-buildx-action@v3
 
