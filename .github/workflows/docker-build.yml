@@ -52,7 +52,7 @@ jobs:
           tags: |
             type=raw,value=latest
             type=sha,prefix=
-            type=date,pattern=YYYYMMDD-HHmmss
+            type=raw,value=build-{{date 'YYYYMMDD-HHmmss'}}
 
       - uses: docker/build-push-action@v6
         with:
